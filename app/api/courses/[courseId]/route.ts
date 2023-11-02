@@ -14,7 +14,9 @@ export async function PATCH(
             This req body will came from a patch req from different components 
             under /teacher/courses/[courseId]/_components
               - title-form.tsx
+              - description-form.tsx
               - image-form.tsx
+              - category-form.tsx
         */
         const values = await req.json();
 
