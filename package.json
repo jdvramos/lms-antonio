@@ -15,6 +15,7 @@
         "@radix-ui/react-dialog": "^1.0.5",
         "@radix-ui/react-label": "^2.0.2",
         "@radix-ui/react-slot": "^1.0.2",
+        "@uploadthing/react": "^5.7.0",
         "axios": "^1.6.0",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.0.0",
@@ -22,10 +23,12 @@
         "next": "13.5.4",
         "react": "^18",
         "react-dom": "^18",
+        "react-dropzone": "^14.2.3",
         "react-hook-form": "^7.47.0",
         "react-hot-toast": "^2.4.1",
         "tailwind-merge": "^1.14.0",
         "tailwindcss-animate": "^1.0.7",
+        "uploadthing": "^5.7.4",
         "zod": "^3.22.4"
     },
     "devDependencies": {
