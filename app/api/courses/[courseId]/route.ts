@@ -17,6 +17,7 @@ export async function PATCH(
               - description-form.tsx
               - image-form.tsx
               - category-form.tsx
+              - price-form.tsx
         */
         const values = await req.json();
 
