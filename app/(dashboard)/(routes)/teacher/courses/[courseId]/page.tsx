@@ -14,6 +14,7 @@ import { TitleForm } from "./_components/title-form";
 import { DescriptionForm } from "./_components/description-form";
 import { ImageForm } from "./_components/image-form";
 import { CategoryForm } from "./_components/category-form";
+import { ChaptersForm } from "./_components/chapters-form";
 import { PriceForm } from "./_components/price-form";
 import { AttachmentForm } from "./_components/attachment-form";
 
@@ -28,13 +29,21 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
         The course and attachment table have one to many relationship where
         a course can have many attachments. Since, we need to a way for user 
         to show, add, edit and delete an attachment we need to include all the
-        attachments of a specific course we are editing
+        attachments of a specific course we are editing. Also, add the userId
+        into the where clause since we only want this course to be modified by
+        the user that created it
     */
     const course = await db.course.findUnique({
         where: {
             id: params.courseId,
+            userId,
         },
         include: {
+            chapters: {
+                orderBy: {
+                    position: "asc",
+                },
+            },
             attachments: {
                 orderBy: {
                     createdAt: "desc",
@@ -53,12 +62,18 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
         return redirect("/");
     }
 
+    /* 
+        The course can only be published when all the requiredFields are truthy.
+        The chapters field must have at least one published chapter. The 
+        attachments are not a required field
+    */
     const requiredFields = [
         course.title,
         course.description,
         course.imageUrl,
         course.price,
         course.categoryId,
+        course.chapters.some((chapter) => chapter.isPublished),
     ];
 
     const totalFields = requiredFields.length;
@@ -103,7 +118,10 @@ const CourseIdPage = async ({ params }: { params: { courseId: string } }) => {
                             <IconBadge icon={ListChecks} />
                             <h2 className="text-xl">Course chapters</h2>
                         </div>
-                        <div>TODO: Chapters</div>
+                        <ChaptersForm
+                            initialData={course}
+                            courseId={course.id}
+                        />
                     </div>
                     <div>
                         <div className="flex items-center gap-x-2">
