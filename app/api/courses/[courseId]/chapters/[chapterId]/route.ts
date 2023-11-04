@@ -13,6 +13,7 @@ export async function PATCH(
             This req body will came from a patch req from different components 
             under /teacher/courses/[courseId]/chapters/[chapterId]/_components
               - chapter-title-form.tsx
+              - chapter-description-form.tsx
 			
 			Here we used destructuring to extract isPublished out of the rest
 			(values). The reason behind this that users cannot accidentally set
