@@ -41,8 +41,8 @@ export async function PATCH(
         }
 
         /* 
-			Check if the user creating an attachment for a course is
-			the owner of the course (authorization)
+			Check if the user updating the course (specifically chapters) 
+            is the owner of the course (authorization)
 		*/
         const courseOwner = await db.course.findUnique({
             where: {
@@ -117,6 +117,124 @@ export async function PATCH(
         return NextResponse.json(chapter);
     } catch (error) {
         console.log("[COURSES_CHAPTER_ID]", error);
+        return new NextResponse("Internal Error", { status: 500 });
+    }
+}
+
+export async function DELETE(
+    req: Request,
+    { params }: { params: { courseId: string; chapterId: string } }
+) {
+    try {
+        const { userId } = auth();
+
+        /* 
+			Check if there's a logged in user (authentication)
+		*/
+        if (!userId) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        /* 
+			Check if the user deleting a chapter of a course
+            is the owner of the course (authorization)
+		*/
+        const courseOwner = await db.course.findUnique({
+            where: {
+                id: params.courseId,
+                userId,
+            },
+        });
+
+        if (!courseOwner) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        /* 
+			Check if the chapter the user is attempting to delete
+            exist in the database, if not return 404 not found
+		*/
+        const chapter = await db.chapter.findUnique({
+            where: {
+                id: params.chapterId,
+                courseId: params.courseId,
+            },
+        });
+
+        if (!chapter) {
+            return new NextResponse("Not Found", { status: 404 });
+        }
+
+        /* 
+			At this point the user is authenticated, authorized and the chapter
+            that is going to be deleted really exist. Next, is to find out if the
+            chapter has a videoUrl data. If so, delete the video on MUX and into
+            the MuxData table
+		*/
+        if (chapter.videoUrl) {
+            /* 
+                First, find if such chapter exist in the MuxData table
+		    */
+            const existingMuxData = await db.muxData.findFirst({
+                where: {
+                    chapterId: params.chapterId,
+                },
+            });
+
+            /* 
+                If so delete the video in MUX and the MuxData table
+		    */
+            if (existingMuxData) {
+                await Video.Assets.del(existingMuxData.assetId);
+                await db.muxData.delete({
+                    where: {
+                        id: existingMuxData.id,
+                    },
+                });
+            }
+        }
+
+        /* 
+			Next, delete the chapter in the Chapter table
+		*/
+        const deletedChapter = await db.chapter.delete({
+            where: {
+                id: params.chapterId,
+            },
+        });
+
+        /* 
+			Since we only allow a course to be publishable if at least one
+            of its chapters was published. We need to perform a check.  
+            By deleting a chapter, it's possible that a course will no  
+            longer have at least one chapter where isPublished set to true. 
+            In this case we want to make the course's isPublished set 
+            back to false. Here, we are checking how many chapters are in a
+            certain course where isPublished is true. If `publishedChaptersInCourse`
+            length value is 0 we are going to update the course's isPublished
+            value to false
+		*/
+        const publishedChaptersInCourse = await db.chapter.findMany({
+            where: {
+                courseId: params.courseId,
+                isPublished: true,
+            },
+        });
+
+        if (!publishedChaptersInCourse.length) {
+            await db.course.update({
+                where: {
+                    id: params.courseId,
+                },
+                data: {
+                    isPublished: false,
+                },
+            });
+        }
+
+        return NextResponse.json(deletedChapter);
+    } catch (error) {
+        console.log("[CHAPTER_ID_DELETE]", error);
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
