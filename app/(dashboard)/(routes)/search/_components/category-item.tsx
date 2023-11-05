@@ -33,9 +33,10 @@ export const CategoryItem = ({
 
     /*
 		We will have a search component and in there we will also push a new
-		url with params of title whenever the user pressed the Enter key. The 
-		title is the value inputted by the user in the search bar and we want
-		that value to be preserved in the urt as title param 
+		url with params of title whenever the user searches the input in the
+        search-input.tsx. The title is the value inputted by the user in the 
+		search bar and we want that value to be preserved in the urt as title
+        param
 	*/
     const currentTitle = searchParams.get("title");
 
