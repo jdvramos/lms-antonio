@@ -4,8 +4,12 @@ datasource db {
   relationMode = "prisma"
 }
 
+// We added the previewFeatures array at the 7:40:40 of the video. T
+// This makes our courses title searchable. Refer to the docs below:
+// https://www.prisma.io/docs/concepts/components/prisma-client/full-text-search
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 model Course {
@@ -28,6 +32,8 @@ model Course {
   updatedAt DateTime @updatedAt
 
   @@index([categoryId])
+  // This makes our courses title searchable
+  @@fulltext([title])
 }
 
 model Category {
