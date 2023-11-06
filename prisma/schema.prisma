@@ -115,6 +115,9 @@ model Purchase {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // @@unique: ensure that no two rows in the Purchase    
+  // table have the same combination of userId and courseId.
+  @@unique([userId, courseId])
   @@index([courseId])
 }
 
