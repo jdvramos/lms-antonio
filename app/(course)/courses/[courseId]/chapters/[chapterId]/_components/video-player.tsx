@@ -32,6 +32,44 @@ export const VideoPlayer = ({
 }: VideoPlayerProps) => {
     const [isReady, setIsReady] = useState(false);
 
+    const router = useRouter();
+    const confetti = useConfettiStore();
+
+    /*
+        The completeOnEnd variable name kind of cryptic. Basically, it will be false
+        if the course was purchased and the chapter was already completed (isCompleted
+        is true). Here, we will only do a put request if completeOnEnd is true which
+        just means the chapter is not yet completed by the user (video hasn't been
+        finished yet or chapter not set to complete manually)
+    */
+    const onEnd = async () => {
+        try {
+            if (completeOnEnd) {
+                await axios.put(
+                    `/api/courses/${courseId}/chapters/${chapterId}/progress`,
+                    {
+                        isCompleted: true,
+                    }
+                );
+
+                if (!nextChapterId) {
+                    confetti.onOpen();
+                }
+
+                toast.success("Progress updated");
+                router.refresh();
+
+                if (nextChapterId) {
+                    router.push(
+                        `/courses/${courseId}/chapters/${nextChapterId}`
+                    );
+                }
+            }
+        } catch {
+            toast.error("Something went wrong");
+        }
+    };
+
     return (
         <div className="relative aspect-video">
             {!isReady && !isLocked && (
@@ -50,7 +88,7 @@ export const VideoPlayer = ({
                     title={title}
                     className={cn(!isReady && "hidden")}
                     onCanPlay={() => setIsReady(true)}
-                    onEnded={() => {}}
+                    onEnded={onEnd}
                     autoPlay
                     playbackId={playbackId}
                 />
