@@ -7,7 +7,9 @@ import { authMiddleware } from "@clerk/nextjs";
 // This is how you add unprotected route
 // export default authMiddleware({ publicRoutes: ["/test"] });
 
-export default authMiddleware({});
+export default authMiddleware({
+    publicRoutes: ["/api/webhook"],
+});
 
 export const config = {
     matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
